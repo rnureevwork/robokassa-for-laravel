@@ -1,6 +1,6 @@
 <?php
 
-namespace Icekristal\RobokassaForLaravel\Services;
+namespace Services;
 
 use Carbon\Carbon;
 
@@ -49,9 +49,23 @@ class IceRobokassaService
         ]);
     }
 
-    public function isAccessSignature(string $signatureValue, int $invId, float|int $sum): bool
+    /**
+     * @param string $signatureValue
+     * @param int $invId
+     * @param float|int $sum
+     * @param string $password
+     * @return bool
+     */
+    public function isAccessSignature(string $signatureValue, int $invId, float|int $sum, string $password): bool
     {
-        return true;
+        $signature = vsprintf('%u:%u:%s%s', [
+            $sum,
+            $invId,
+            $password,
+            $this->getShpParamsString($this->getShpParams())
+        ]);
+
+        return md5($signature) === strtolower($signatureValue);
     }
 
     /**
@@ -123,17 +137,33 @@ class IceRobokassaService
     }
 
     /**
-     * @param array|null $shpParams
+     * @param array $shpParams
      * @return IceRobokassaService
      */
-    public function setShpParams(?array $shpParams): IceRobokassaService
+    public function setShpParams(array $shpParams): IceRobokassaService
     {
-        $this->shpParams = $shpParams;
+        $setArray = [];
+        foreach ($shpParams as $shpParam) {
+            if (stripos($shpParam, 'shp_') === 0) {
+                $setArray[] = $shpParam;
+            } else {
+                $setArray[] = 'shp_' . $shpParam;
+            }
+        }
+        $this->shpParams = $setArray;
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
+    public function getShpParams(): ?array
+    {
+        return $this->shpParams;
+    }
 
-    private function getCustomParamsString(array $source): string
+
+    private function getShpParamsString(array $source): string
     {
         $params = [];
 
@@ -157,7 +187,7 @@ class IceRobokassaService
      * @param $name
      * @return mixed|null
      */
-    public function getCustomParam($name): mixed
+    public function getShpParam($name): mixed
     {
         $key = 'shp_' . $name;
 
@@ -168,4 +198,61 @@ class IceRobokassaService
         return null;
     }
 
+    /**
+     * @return string
+     */
+    public function getSignatureValue(): string
+    {
+        $this->signatureValue = vsprintf('%s:%01.2F:%u:%s', [
+            $this->login,
+            $this->sum,
+            $this->invId,
+            $this->password1
+        ]);
+
+        if (!is_null($this->shpParams)) {
+            ksort($this->shpParams);
+
+            $this->signatureValue .= ':' . implode(':', array_map(static function ($key, $value) {
+                    return $key . '=' . $value;
+                }, array_keys($this->shpParams), $this->shpParams));
+        }
+
+        $this->setSignatureValue($this->signatureValue);
+
+        return $this->signatureValue;
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public function getPaymentUrl(): string
+    {
+        if ($this->sum < 0) {
+            throw new \Exception('Error sum robokassa');
+        }
+        if ($this->invId < 0) {
+            throw new \Exception('Error invId robokassa');
+        }
+        if (empty($this->description)) {
+            throw new \Exception('Error description robokassa');
+        }
+
+        $data = http_build_query($this->mainParams, null, '&');
+        $shp = http_build_query($this->shpParams, null, '&');
+        $this->paymentUrl = config('robokassa.base_url', 'https://auth.robokassa.ru/Merchant/Index.aspx?') . $data . ($shp ? '&' . $shp : '');
+        return $this->paymentUrl;
+    }
+
+    /**
+     * @param string $signatureValue
+     * @return IceRobokassaService
+     */
+    public function setSignatureValue(string $signatureValue): IceRobokassaService
+    {
+        $this->signatureValue = $signatureValue;
+        $this->mainParams['signatureValue'] = $signatureValue;
+        return $this;
+    }
 }

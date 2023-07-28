@@ -1,6 +1,6 @@
 <?php
 
-namespace Icekristal\RobokassaForLaravel\Http\Controllers;
+namespace Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
