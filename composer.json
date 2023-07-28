@@ -1,0 +1,32 @@
+{
+    "name": "icekristal/robokassa-for-laravel",
+    "description": "Robokassa API for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "icekristal",
+            "email": "savatneev-anton@mail.ru"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^8.1",
+        "laravel/framework": "^9|^10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Icekristal\\RobokassaForLaravel\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Icekristal\\RobokassaForLaravel\\RobokassaServiceProvider"
+            ],
+            "aliases": {
+                "Robokassa": "Icekristal\\RobokassaForLaravel\\Facades\\Robokassa"
+            }
+        }
+    }
+}
