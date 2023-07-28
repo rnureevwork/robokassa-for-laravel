@@ -239,6 +239,8 @@ class IceRobokassaService
             throw new \Exception('Error description robokassa');
         }
 
+        $this->getSignatureValue();
+
         $data = http_build_query($this->mainParams, null, '&');
         $shp = http_build_query($this->shpParams, null, '&');
         $this->paymentUrl = config('robokassa.base_url', 'https://auth.robokassa.ru/Merchant/Index.aspx?') . $data . ($shp ? '&' . $shp : '');
