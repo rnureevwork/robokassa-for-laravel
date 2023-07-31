@@ -18,18 +18,34 @@ class WebhookController extends BaseController
 
     /**
      * @param Request $request
-     * @return Response|void
+     * @return array
      */
     private function checkParams(Request $request)
     {
-        if (!$request->has('InvId') || !$request->has('OutSum') || !$request->has('SignatureValue')) return new Response("bad params", 400);
+        $infoCheck = [
+            'status' => 200,
+            'message' => 'OK',
+        ];
+        if (!$request->has('InvId') || !$request->has('OutSum') || !$request->has('SignatureValue')) $infoCheck = [
+            'status' => 400,
+            'message' => 'error check params',
+        ];
 
         $this->invId = $request->get('InvId', null);
         $this->outSum = $request->get('OutSum', 0);
         $this->signatureValue = $request->get('SignatureValue', '');
 
-        if (!Robokassa::isAccessSignature($this->signatureValue, $this->invId, $this->outSum, $request->all())) return new Response("bad signature", 400);
-        if (!RobokassaModel::query()->find($this->invId)->exists()) return new Response("bad invId", 400);
+        if (!Robokassa::isAccessSignature($this->signatureValue, $this->invId, $this->outSum, $request->all())) $infoCheck = [
+            'status' => 403,
+            'message' => 'error check signature',
+        ];
+
+        if (!RobokassaModel::query()->find($this->invId)->exists()) $infoCheck = [
+            'status' => 404,
+            'message' => 'Not found',
+        ];
+
+        return $infoCheck;
     }
 
     /**
@@ -56,7 +72,8 @@ class WebhookController extends BaseController
      */
     public function index(Request $request): Response
     {
-        $this->checkParams($request);
+        $info = $this->checkParams($request);
+        if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::WAITING);
         return new Response("OK{$this->invId}", 200);
     }
@@ -65,12 +82,16 @@ class WebhookController extends BaseController
      * Success URL
      *
      * @param Request $request
-     * @return Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|Response|\Illuminate\Routing\Redirector
      */
-    public function success(Request $request): Response
+    public function success(Request $request)
     {
-        $this->checkParams($request);
+        $info = $this->checkParams($request);
+        if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::PAID);
+        if(!is_null(config('robokassa.redirect_success_url'))) {
+            return redirect(config('robokassa.redirect_success_url'));
+        }
         return new Response("OK{$this->invId}", 200);
     }
 
@@ -78,12 +99,16 @@ class WebhookController extends BaseController
      * Fail URL
      *
      * @param Request $request
-     * @return Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|Response|\Illuminate\Routing\Redirector
      */
-    public function fail(Request $request): Response
+    public function fail(Request $request)
     {
-        $this->checkParams($request);
+        $info = $this->checkParams($request);
+        if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::CANCEL);
+        if(!is_null(config('robokassa.redirect_fail_url'))) {
+            return redirect(config('robokassa.redirect_fail_url'));
+        }
         return new Response("OK{$this->invId}", 200);
     }
 }
