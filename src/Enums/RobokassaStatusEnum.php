@@ -1,6 +1,6 @@
 <?php
 
-namespace Enums;
+namespace Icekristal\RobokassaForLaravel\Enums;
 
 enum RobokassaStatusEnum: int
 {

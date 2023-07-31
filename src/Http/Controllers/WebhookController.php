@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Controllers;
+namespace Icekristal\RobokassaForLaravel\Http\Controllers;
 
 use Enums\RobokassaStatusEnum;
 use Facades\Robokassa;

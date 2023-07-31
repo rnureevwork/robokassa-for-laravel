@@ -1,5 +1,7 @@
 <?php
 
+namespace Icekristal\RobokassaForLaravel;
+
 use Services\IceRobokassaService;
 use Illuminate\Support\ServiceProvider;
 

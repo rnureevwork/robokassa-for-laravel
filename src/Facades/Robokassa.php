@@ -1,6 +1,6 @@
 <?php
 
-namespace Facades;
+namespace Icekristal\RobokassaForLaravel\Facades;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Facade;

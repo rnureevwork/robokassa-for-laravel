@@ -1,6 +1,6 @@
 <?php
 
-namespace Http\Models;
+namespace Icekristal\RobokassaForLaravel\Http\Models;
 
 use Enums\RobokassaStatusEnum;
 use Illuminate\Database\Eloquent\Model;
