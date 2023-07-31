@@ -18,9 +18,10 @@ class WebhookController extends BaseController
 
     /**
      * @param Request $request
+     * @param string $type
      * @return array
      */
-    private function checkParams(Request $request)
+    private function checkParams(Request $request, $type = 'init'): array
     {
         $infoCheck = [
             'status' => 200,
@@ -35,7 +36,7 @@ class WebhookController extends BaseController
         $this->outSum = $request->get('OutSum', 0);
         $this->signatureValue = $request->get('SignatureValue', '');
 
-        if (!Robokassa::isAccessSignature($this->signatureValue, $this->invId, $this->outSum, $request->all())) $infoCheck = [
+        if (!Robokassa::isAccessSignature($this->signatureValue, $this->invId, $this->outSum, $request->all(), $type)) $infoCheck = [
             'status' => 403,
             'message' => 'error check signature',
         ];
@@ -86,7 +87,7 @@ class WebhookController extends BaseController
      */
     public function success(Request $request)
     {
-        $info = $this->checkParams($request);
+        $info = $this->checkParams($request, 'result');
         if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::PAID);
         if(!is_null(config('robokassa.redirect_success_url'))) {
@@ -103,7 +104,7 @@ class WebhookController extends BaseController
      */
     public function fail(Request $request)
     {
-        $info = $this->checkParams($request);
+        $info = $this->checkParams($request, 'result');
         if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::CANCEL);
         if(!is_null(config('robokassa.redirect_fail_url'))) {

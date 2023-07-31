@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getShpParams()
  * @method static string getPaymentUrl()
  * @method static string setExpirationDate(Carbon $expirationDate)
- * @method static bool isAccessSignature(string $signatureValue, int $invId, float|int $sum, array $shpParams)
+ * @method static bool isAccessSignature(string $signatureValue, int $invId, float|int $sum, array $shpParams, $type = 'init')
  *
  */
 class Robokassa extends Facade

@@ -59,21 +59,22 @@ class IceRobokassaService
 
     /**
      * @param string $signatureValue
-     * @param int $invId
+     * @param int|null $invId
      * @param float|int $sum
      * @param array $shpParams
+     * @param string $typePassword
      * @return bool
      */
-    public function isAccessSignature(string $signatureValue, int|null $invId, float|int $sum, array $shpParams): bool
+    public function isAccessSignature(string $signatureValue, int|null $invId, float|int $sum, array $shpParams, string $typePassword = 'init'): bool
     {
         $signature = vsprintf('%u:%u:%s%s', [
             $sum,
             $invId,
-            $this->password2,
+            $typePassword == 'init' ? $this->password1 : $this->password2,
             $this->getShpParamsString($shpParams)
         ]);
 
-        return md5($signature) === strtolower($signatureValue);
+        return md5($signature) === strtoupper($signatureValue);
     }
 
     /**
