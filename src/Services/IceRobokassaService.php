@@ -109,6 +109,7 @@ class IceRobokassaService
      */
     public function setSum(float|int $sum): IceRobokassaService
     {
+        $sum = round($sum, 2);
         $this->sum = $sum;
         $this->mainParams['OutSum'] = $sum;
         return $this;
@@ -203,14 +204,14 @@ class IceRobokassaService
      */
     public function getSignatureValue(): string
     {
-        $this->signatureValue = vsprintf('%s:%01.2F:%u:%s', [
+        $this->signatureValue = vsprintf('%s:%u:%u:%s', [
             $this->login,
             $this->sum,
             $this->invId,
             $this->password1
         ]);
 
-        if (!is_null($this->shpParams)) {
+        if (count($this->shpParams) >= 1) {
             ksort($this->shpParams);
 
             $this->signatureValue .= ':' . implode(':', array_map(static function ($key, $value) {
