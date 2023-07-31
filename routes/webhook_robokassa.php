@@ -1,6 +1,6 @@
 <?php
 
-use Http\Controllers\WebhookController;
+use Icekristal\RobokassaForLaravel\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 if(!is_null(config('services.robokassa.result_url'))) {
