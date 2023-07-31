@@ -74,7 +74,7 @@ class IceRobokassaService
             $this->getShpParamsString($shpParams)
         ]);
 
-        return md5($signature) === strtoupper($signatureValue);
+        return strtoupper(md5($signature)) === strtoupper($signatureValue);
     }
 
     /**
