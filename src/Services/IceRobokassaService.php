@@ -145,11 +145,11 @@ class IceRobokassaService
     public function setShpParams(array $shpParams): IceRobokassaService
     {
         $setArray = [];
-        foreach ($shpParams as $shpParam) {
-            if (stripos($shpParam, 'shp_') === 0) {
+        foreach ($shpParams as $key => $shpParam) {
+            if (stripos($key, 'shp_') === 0) {
                 $setArray[] = $shpParam;
             } else {
-                $setArray[] = 'shp_' . $shpParam;
+                $setArray['shp_'.$key] = $shpParam;
             }
         }
         $this->shpParams = $setArray;
