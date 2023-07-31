@@ -12,9 +12,9 @@ use Illuminate\Routing\Controller as BaseController;
 
 class WebhookController extends BaseController
 {
-    public int|null $invId;
-    public mixed $outSum;
-    public string $signatureValue;
+    public int|null $invId = null;
+    public mixed $outSum = 0;
+    public string $signatureValue = '';
 
     /**
      * @param Request $request
@@ -24,9 +24,9 @@ class WebhookController extends BaseController
     {
         if (!$request->has('InvId') || !$request->has('OutSum') || !$request->has('SignatureValue')) return new Response("bad params", 400);
 
-        $this->invId = $request->get('InvId');
-        $this->outSum = $request->get('OutSum');
-        $this->signatureValue = $request->get('SignatureValue');
+        $this->invId = $request->get('InvId', null);
+        $this->outSum = $request->get('OutSum', 0);
+        $this->signatureValue = $request->get('SignatureValue', '');
 
         if (!Robokassa::isAccessSignature($this->signatureValue, $this->invId, $this->outSum, $request->all())) return new Response("bad signature", 400);
         if (!RobokassaModel::query()->find($this->invId)->exists()) return new Response("bad invId", 400);
