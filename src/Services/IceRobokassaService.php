@@ -36,7 +36,7 @@ class IceRobokassaService
         $this->testPassword2 = config('services.robokassa.test_password_two');
         $this->testMode = config('robokassa.is_test_mode', false);
 
-        $this->setMainParams([
+        $this->mainParams = [
             'MerchantLogin' => $this->login,
             'InvId' => null,
             'OutSum' => 0,
@@ -46,7 +46,7 @@ class IceRobokassaService
             'IncCurrLabel' => '',
             'Encoding' => $this->encoding,
             'IsTest' => $this->testMode,
-        ]);
+        ];
     }
 
     /**
@@ -66,14 +66,6 @@ class IceRobokassaService
         ]);
 
         return md5($signature) === strtolower($signatureValue);
-    }
-
-    /**
-     * @param array $mainParams
-     */
-    public function setMainParams(array $mainParams): void
-    {
-        $this->mainParams = $mainParams;
     }
 
     /**
