@@ -288,6 +288,7 @@ class IceRobokassaService
         try {
             $robokassa->updateQuietly([
                 'is_send' => true,
+                'status' => RobokassaStatusEnum::WAITING->value,
                 'payment_url' => $this->paymentUrl,
                 'send_data' => array_merge($this->mainParams, $this->shpParams),
                 'send_at' => now(),
