@@ -21,7 +21,7 @@ class WebhookController extends BaseController
      * @param string $type
      * @return array
      */
-    private function checkParams(Request $request, $type = 'init'): array
+    private function checkParams(Request $request, string $type = 'init'): array
     {
         $infoCheck = [
             'status' => 200,
@@ -73,7 +73,7 @@ class WebhookController extends BaseController
      */
     public function index(Request $request): Response
     {
-        $info = $this->checkParams($request);
+        $info = $this->checkParams($request, 'result');
         if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::WAITING);
         return new Response("OK{$this->invId}", 200);
@@ -87,7 +87,7 @@ class WebhookController extends BaseController
      */
     public function success(Request $request)
     {
-        $info = $this->checkParams($request, 'result');
+        $info = $this->checkParams($request, 'init');
         if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::PAID);
         if(!is_null(config('robokassa.redirect_success_url'))) {
@@ -104,7 +104,7 @@ class WebhookController extends BaseController
      */
     public function fail(Request $request)
     {
-        $info = $this->checkParams($request, 'result');
+        $info = $this->checkParams($request, 'init');
         if ($info['status'] !== 200) return new Response($info['message'], $info['status']);
         $this->updateStatus(RobokassaStatusEnum::CANCEL);
         if(!is_null(config('robokassa.redirect_fail_url'))) {
