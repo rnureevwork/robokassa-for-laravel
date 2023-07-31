@@ -2,7 +2,7 @@
 
 namespace Icekristal\RobokassaForLaravel;
 
-use Services\IceRobokassaService;
+use Icekristal\RobokassaForLaravel\Services\IceRobokassaService;
 use Illuminate\Support\ServiceProvider;
 
 class RobokassaServiceProvider extends ServiceProvider
