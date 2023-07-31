@@ -2,7 +2,7 @@
 
 namespace Icekristal\RobokassaForLaravel\Http\Models;
 
-use Enums\RobokassaStatusEnum;
+use Icekristal\RobokassaForLaravel\Enums\RobokassaStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 
 /**

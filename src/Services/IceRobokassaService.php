@@ -250,9 +250,9 @@ class IceRobokassaService
 
 
     /**
-     * @return Robokassa
+     * @return ?Robokassa
      */
-    private function newTransactionDb(): Robokassa
+    private function newTransactionDb(): ?Robokassa
     {
         try {
             return Robokassa::query()->create([
@@ -273,6 +273,7 @@ class IceRobokassaService
             ]);
         } catch (Exception $e) {
             Log::warning('Error save robokassa', [$e->getMessage()]);
+            return null;
         }
     }
 
