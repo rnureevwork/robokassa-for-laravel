@@ -36,8 +36,8 @@ class IceRobokassaService
         $this->testMode = config('robokassa.is_test_mode', false);
 
         if ($this->testMode) {
-            $this->password1 = config('services.robokassa.test_password_one');
-            $this->password2 = config('services.robokassa.test_password_two');
+            $this->password1 = config('services.robokassa.password_test_one');
+            $this->password2 = config('services.robokassa.password_test_two');
         } else {
             $this->password1 = config('services.robokassa.password_one');
             $this->password2 = config('services.robokassa.password_two');
