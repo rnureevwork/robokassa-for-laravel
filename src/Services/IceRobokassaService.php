@@ -18,7 +18,7 @@ class IceRobokassaService
     private string $paymentUrl;
     private string $email;
     private float|int $sum;
-    private int $invId;
+    private int|null $invId;
     private string $description;
     private Carbon $expirationDate;
     private string $signatureValue;
@@ -233,7 +233,7 @@ class IceRobokassaService
             throw new \Exception('Error sum robokassa');
         }
         $transactionDb = $this->newTransactionDb();
-        $this->invId = $transactionDb?->id ?? null;
+        $this->setInvId($transactionDb?->id);
 
         if (empty($this->description)) {
             throw new \Exception('Error description robokassa');
@@ -333,18 +333,18 @@ class IceRobokassaService
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getInvId(): int
+    public function getInvId(): ?int
     {
         return $this->invId;
     }
 
     /**
-     * @param int $invId
+     * @param int|null $invId
      * @return $this
      */
-    public function setInvId(int $invId): IceRobokassaService
+    public function setInvId(?int $invId): IceRobokassaService
     {
         $this->invId = $invId;
         $this->mainParams['InvId'] = $invId;
