@@ -40,12 +40,14 @@ php artisan migrate
 
 Get payment url:
 ```php
-$paymentUrl = \Facades\Robokassa::setSum(100)
+use Icekristal\RobokassaForLaravel\Facades\Robokassa;
+
+$paymentUrl = Robokassa::setSum(100)
 ->setCurrency("USD")
 ->setDescription("Description order")->getPaymentUrl();
 
 //optional
-$paymentUrl = \Facades\Robokassa::setSum(100)
+$paymentUrl = Robokassa::setSum(100)
 ->setCurrency("USD")
 ->setDescription("Description order")
 ->setOwner(\Illuminate\Database\Eloquent\Model::class) //Model owner order

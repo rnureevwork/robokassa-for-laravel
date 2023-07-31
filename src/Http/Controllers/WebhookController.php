@@ -2,8 +2,10 @@
 
 namespace Icekristal\RobokassaForLaravel\Http\Controllers;
 
-use Enums\RobokassaStatusEnum;
-use Facades\Robokassa;
+
+use Icekristal\RobokassaForLaravel\Enums\RobokassaStatusEnum;
+use Icekristal\RobokassaForLaravel\Facades\Robokassa;
+use Icekristal\RobokassaForLaravel\Http\Models\Robokassa as RobokassaModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller as BaseController;
@@ -27,7 +29,7 @@ class WebhookController extends BaseController
         $this->signatureValue = $request->get('SignatureValue');
 
         if (!Robokassa::isAccessSignature($this->signatureValue, $this->invId, $this->outSum, $request->all())) return new Response("bad signature", 400);
-        if (!\Http\Models\Robokassa::query()->find($this->invId)->exists()) return new Response("bad invId", 400);
+        if (!RobokassaModel::query()->find($this->invId)->exists()) return new Response("bad invId", 400);
     }
 
     /**
@@ -36,7 +38,7 @@ class WebhookController extends BaseController
      */
     private function updateStatus(RobokassaStatusEnum $status)
     {
-        $robokassa = \Http\Models\Robokassa::query()->find($this->invId);
+        $robokassa = RobokassaModel::query()->find($this->invId);
         $robokassa->update([
             'status' => $status->value,
             'paid_at' => $status === RobokassaStatusEnum::PAID ? now() : null,
