@@ -64,7 +64,7 @@ class IceRobokassaService
      * @param array $shpParams
      * @return bool
      */
-    public function isAccessSignature(string $signatureValue, int $invId, float|int $sum, array $shpParams): bool
+    public function isAccessSignature(string $signatureValue, int|null $invId, float|int $sum, array $shpParams): bool
     {
         $signature = vsprintf('%u:%u:%s%s', [
             $sum,

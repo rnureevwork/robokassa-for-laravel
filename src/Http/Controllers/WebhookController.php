@@ -12,7 +12,7 @@ use Illuminate\Routing\Controller as BaseController;
 
 class WebhookController extends BaseController
 {
-    public int $invId;
+    public int|null $invId;
     public mixed $outSum;
     public string $signatureValue;
 
