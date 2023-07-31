@@ -1,11 +1,11 @@
 <?php
 
-namespace Services;
+namespace Icekristal\RobokassaForLaravel\Services;
 
 use Carbon\Carbon;
-use Enums\RobokassaStatusEnum;
 use Exception;
-use Http\Models\Robokassa;
+use Icekristal\RobokassaForLaravel\Enums\RobokassaStatusEnum;
+use Icekristal\RobokassaForLaravel\Http\Models\Robokassa;
 use Illuminate\Support\Facades\Log;
 
 class IceRobokassaService
