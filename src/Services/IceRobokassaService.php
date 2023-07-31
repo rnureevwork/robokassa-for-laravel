@@ -218,7 +218,7 @@ class IceRobokassaService
                 }, array_keys($this->shpParams), $this->shpParams));
         }
 
-        $this->setSignatureValue($this->signatureValue);
+        $this->setSignatureValue(md5($this->signatureValue));
 
         return $this->signatureValue;
     }
