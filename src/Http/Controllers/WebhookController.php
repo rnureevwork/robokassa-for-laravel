@@ -38,11 +38,14 @@ class WebhookController extends BaseController
      */
     private function updateStatus(RobokassaStatusEnum $status)
     {
-        $robokassa = RobokassaModel::query()->find($this->invId);
-        $robokassa->update([
-            'status' => $status->value,
-            'paid_at' => $status === RobokassaStatusEnum::PAID ? now() : null,
-        ]);
+        $robokassa = RobokassaModel::query()->where('id', $this->invId)->first();
+        if(!is_null($robokassa)) {
+            $robokassa->update([
+                'status' => $status->value,
+                'paid_at' => $status === RobokassaStatusEnum::PAID ? now() : null,
+            ]);
+        }
+
     }
 
     /**
