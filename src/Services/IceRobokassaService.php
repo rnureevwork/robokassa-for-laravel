@@ -3,6 +3,10 @@
 namespace Services;
 
 use Carbon\Carbon;
+use Enums\RobokassaStatusEnum;
+use Exception;
+use Http\Models\Robokassa;
+use Illuminate\Support\Facades\Log;
 
 class IceRobokassaService
 {
@@ -10,11 +14,9 @@ class IceRobokassaService
     private string $login;
     private string $password1;
     private string $password2;
-    private string $testPassword1;
-    private string $testPassword2;
     private string $testMode;
     private string $paymentUrl;
-    private string $testPaymentUrl;
+    private string $email;
     private float|int $sum;
     private int $invId;
     private string $description;
@@ -23,18 +25,23 @@ class IceRobokassaService
     private string $culture = 'ru';
     private string $encoding = 'utf-8';
     private string $currency = 'RUB';
-    private ?array $shpParams = null;
+    private array $shpParams = [];
     private array $mainParams;
+    private mixed $owner = null;
 
 
     public function __construct()
     {
         $this->login = config('services.robokassa.login');
-        $this->password1 = config('services.robokassa.password_one');
-        $this->password2 = config('services.robokassa.password_two');
-        $this->testPassword1 = config('services.robokassa.test_password_one');
-        $this->testPassword2 = config('services.robokassa.test_password_two');
         $this->testMode = config('robokassa.is_test_mode', false);
+
+        if ($this->testMode) {
+            $this->password1 = config('services.robokassa.test_password_one');
+            $this->password2 = config('services.robokassa.test_password_two');
+        } else {
+            $this->password1 = config('services.robokassa.password_one');
+            $this->password2 = config('services.robokassa.password_two');
+        }
 
         $this->mainParams = [
             'MerchantLogin' => $this->login,
@@ -53,16 +60,16 @@ class IceRobokassaService
      * @param string $signatureValue
      * @param int $invId
      * @param float|int $sum
-     * @param string $password
+     * @param array $shpParams
      * @return bool
      */
-    public function isAccessSignature(string $signatureValue, int $invId, float|int $sum, string $password): bool
+    public function isAccessSignature(string $signatureValue, int $invId, float|int $sum, array $shpParams): bool
     {
         $signature = vsprintf('%u:%u:%s%s', [
             $sum,
             $invId,
-            $password,
-            $this->getShpParamsString($this->getShpParams())
+            $this->password2,
+            $this->getShpParamsString($shpParams)
         ]);
 
         return md5($signature) === strtolower($signatureValue);
@@ -224,9 +231,9 @@ class IceRobokassaService
         if ($this->sum < 0) {
             throw new \Exception('Error sum robokassa');
         }
-        if ($this->invId < 0) {
-            throw new \Exception('Error invId robokassa');
-        }
+        $transactionDb = $this->newTransactionDb();
+        $this->invId = $transactionDb?->id ?? null;
+
         if (empty($this->description)) {
             throw new \Exception('Error description robokassa');
         }
@@ -236,7 +243,54 @@ class IceRobokassaService
         $data = http_build_query($this->mainParams, null, '&');
         $shp = http_build_query($this->shpParams, null, '&');
         $this->paymentUrl = config('robokassa.base_url', 'https://auth.robokassa.ru/Merchant/Index.aspx?') . $data . ($shp ? '&' . $shp : '');
+        $this->sendTransactionDb($transactionDb);
         return $this->paymentUrl;
+    }
+
+
+    /**
+     * @return Robokassa
+     */
+    private function newTransactionDb(): Robokassa
+    {
+        try {
+            return Robokassa::query()->create([
+                'owner_type' => $this->owner?->getMorphClass() ?? null,
+                'owner_id' => $this->owner?->id ?? null,
+                'description' => $this->description ?? null,
+                'amount' => $this->sum ?? null,
+                'lang' => $this->culture ?? 'ru',
+                'email' => $this->email ?? null,
+                'currency' => $this->currency,
+                'status' => RobokassaStatusEnum::NEW->value,
+                'is_send' => false,
+                'payment_url' => null,
+                'expiration_date' => $this->expirationDate ?? null,
+                'send_data' => null,
+                'answer_data' => null,
+                'send_at' => null,
+            ]);
+        } catch (Exception $e) {
+            Log::warning('Error save robokassa', [$e->getMessage()]);
+        }
+    }
+
+    /**
+     * @param Robokassa $robokassa
+     * @return void
+     */
+    private function sendTransactionDb(Robokassa $robokassa): void
+    {
+        try {
+            $robokassa->updateQuietly([
+                'is_send' => true,
+                'payment_url' => $this->paymentUrl,
+                'send_data' => array_merge($this->mainParams, $this->shpParams),
+                'send_at' => now(),
+            ]);
+        } catch (Exception $exception) {
+            Log::error('Error send robokassa', [$exception->getMessage()]);
+        }
     }
 
     /**
@@ -249,4 +303,69 @@ class IceRobokassaService
         $this->mainParams['signatureValue'] = $signatureValue;
         return $this;
     }
+
+    /**
+     * @param $owner
+     * @return $this
+     */
+    public function setOwner($owner): IceRobokassaService
+    {
+        $this->owner = $owner;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOwner(): mixed
+    {
+        return $this->owner;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
+    /**
+     * @return int
+     */
+    public function getInvId(): int
+    {
+        return $this->invId;
+    }
+
+    /**
+     * @param int $invId
+     * @return $this
+     */
+    public function setInvId(int $invId): IceRobokassaService
+    {
+        $this->invId = $invId;
+        $this->mainParams['InvId'] = $invId;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param string $email
+     * @return IceRobokassaService
+     */
+    public function setEmail(string $email): IceRobokassaService
+    {
+        $this->email = $email;
+        $this->mainParams['Email'] = $email;
+        return $this;
+    }
+
 }
