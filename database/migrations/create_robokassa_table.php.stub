@@ -25,6 +25,8 @@ return new class extends Migration
             $table->dateTime('send_at')->nullable();
             $table->json('send_data')->nullable();
             $table->json('answer_data')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 };

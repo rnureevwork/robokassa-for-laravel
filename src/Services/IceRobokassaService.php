@@ -302,7 +302,7 @@ class IceRobokassaService
     public function setSignatureValue(string $signatureValue): IceRobokassaService
     {
         $this->signatureValue = $signatureValue;
-        $this->mainParams['signatureValue'] = $signatureValue;
+        $this->mainParams['SignatureValue'] = $signatureValue;
         return $this;
     }
 
